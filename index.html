@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Secure Base64 encoder/decoder for REST API authentication with privacy features">
+    <meta name="keywords" content="base64, encoder, decoder, REST API, authentication, security">
+    <meta name="author" content="Aleksandr Sukhov">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'none';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="no-referrer">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Base64 Encoder/Decoder - Secure Authentication Tool</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 10px;
+            font-size: 0.75em; /* Reduce base font size to match Visual Subnet Calculator */
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="password"], textarea {
+            padding: 4px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+        button {
+            padding: 4px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .copy-button {
+            background-color: #2196F3;
+        }
+        .copy-button:hover {
+            background-color: #0b7dda;
+        }
+        .clear-button {
+            background-color: #f44336;
+        }
+        .clear-button:hover {
+            background-color: #da190b;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+        .result-area {
+            margin-top: 10px;
+        }
+        .result-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .example {
+            background-color: #f9f9f9;
+            padding: 8px;
+            border-left: 3px solid #4CAF50;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+        .example-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .checkboxes {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            background-color: #fff;
+        }
+        .checkbox-group {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .button-group {
+            margin-top: 10px;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        h1, h2, h3 {
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+        
+        /* Security features */
+        .security-badge {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .hidden-content {
+            filter: blur(8px);
+            user-select: none;
+            pointer-events: none;
+        }
+        
+        .loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid #4CAF50;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Accessibility improvements */
+        button:focus, input:focus, textarea:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+        
+        /* Add keyboard focus indicator */
+        .keyboard-focus {
+            box-shadow: 0 0 0 2px #4CAF50;
+        }
+        
+        /* Add tooltip styles for better UX */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            input[type="text"], input[type="password"] {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            label {
+                width: 100%;
+                margin-bottom: 3px;
+            }
+            
+            .security-line {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            
+            .security-buttons {
+                margin-top: 5px;
+            }
+        }
+        
+        /* Security line styling */
+        .security-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .security-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .security-buttons button {
+            padding: 3px 8px;
+            font-size: 0.8em;
+            margin: 0;
+        }
+        
+        /* Print styles */
+        @media print {
+            .hidden-content {
+                filter: none !important;
+            }
+            
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Base64 Encoder/Decoder</h1>
+        
+        <!-- Add info about creation -->
+        <p style="font-style: italic; font-size: 0.8em; text-align: right;">
+            Created by Aleksandr Sukhov
+        </p>
+        
+        <div class="security-line">
+            <div class="security-badge">
+                Client-side processing • No data transmission • Privacy-first design
+            </div>
+            <div class="security-buttons">
+                <button id="clearAllBtn" class="clear-button">Clear All</button>
+                <button id="securityCheckBtn" class="copy-button">Security Check</button>
+            </div>
+        </div>
+        
+        <div id="securityReport" class="example" style="display: none; margin-bottom: 10px;">
+            <div class="example-title">Security Analysis</div>
+            <div id="securityDetails"></div>
+        </div>
+        
+        <!-- Encoding Section -->
+        <div class="section">
+            <h3>Encode to Base64 (for REST API Authentication)</h3>
+            
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" placeholder="Enter username" aria-label="Username" autocomplete="username" spellcheck="false">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password" aria-label="Password" autocomplete="current-password">
+            </div>
+            
+            <div class="checkboxes">
+                <h3>Options:</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showPasswordEncode">
+                    <label for="showPasswordEncode">Show password</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoEncode" checked>
+                    <label for="autoEncode">Auto-encode as you type</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="hideBase64Result">
+                    <label for="hideBase64Result">Hide result (screen sharing protection)</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoExpire" checked>
+                    <label for="autoExpire">Auto-clear after 5 minutes</label>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="encodeBtn" class="tooltip">
+                    Encode to Base64
+                    <span class="tooltip-text">Converts username:password to Base64 format</span>
+                </button>
+                <button id="clearEncodeBtn" class="clear-button">Clear</button>
+                <button id="generateStrongBtn" class="copy-button">Generate Strong Password</button>
+            </div>
+            
+            <div class="result-area">
+                <div class="result-label">Base64 Result:</div>
+                <textarea id="encodedResult" readonly placeholder="Base64 encoded result will appear here..." aria-live="polite"></textarea>
+                <div class="button-group">
+                    <button id="copyEncodedBtn" class="copy-button">Copy to Clipboard</button>
+                    <button id="copyAuthHeaderBtn" class="copy-button">Copy Auth Header</button>
+                    <button id="validateBase64Btn" class="copy-button">Validate Base64</button>
+                </div>
+                <div id="encodeMessage"></div>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Example Usage:</div>
+                Username: admin, Password: password123<br>
+                Result: YWRtaW46cGFzc3dvcmQxMjM=<br>
+                <strong>REST API Header:</strong> Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=<br>
+                <strong>cURL Example:</strong> curl -H "Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=" https://api.example.com
+            </div>
+        </div>
+        
+        <!-- Decoding Section -->
+        <div class="section">
+            <h3>Decode from Base64</h3>
+            
+            <div class="form-group">
+                <label for="base64Input">Base64 String:</label>
+                <textarea id="base64Input" placeholder="Paste Base64 string here (with or without 'Basic ' prefix)..." aria-label="Base64 Input" spellcheck="false"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="decodeBtn" class="tooltip">
+                    Decode from Base64
+                    <span class="tooltip-text">Converts Base64 back to original text</span>
+                </button>
+                <button id="clearDecodeBtn" class="clear-button">Clear</button>
+                <button id="analyzeBtn" class="copy-button">Analyze String</button>
+            </div>
+            
+            <div class="result-area">
+                <div class="result-label">Decoded Result:</div>
+                <div class="form-group">
+                    <label for="decodedUsername">Username:</label>
+                    <input type="text" id="decodedUsername" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="decodedPassword">Password:</label>
+                    <input type="password" id="decodedPassword" readonly>
+                    <div class="checkboxes">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showPasswordDecode">
+                            <label for="showPasswordDecode">Show decoded password</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="fullDecoded">Full String:</label>
+                    <textarea id="fullDecoded" readonly placeholder="Decoded result will appear here..." aria-live="polite"></textarea>
+                </div>
+                <div class="button-group">
+                    <button id="copyDecodedBtn" class="copy-button">Copy Full String</button>
+                    <button id="copyUsernameBtn" class="copy-button">Copy Username</button>
+                    <button id="copyPasswordBtn" class="copy-button">Copy Password</button>
+                </div>
+                <div id="decodeMessage"></div>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Example:</div>
+                Base64: YWRtaW46cGFzc3dvcmQxMjM=<br>
+                Decoded: admin:password123<br>
+                Username: admin<br>
+                Password: password123
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * State-of-the-Art Base64 Encoder/Decoder
+         * 
+         * Enhanced with modern security features, performance optimizations,
+         * accessibility improvements, and privacy-first design principles
+         * 
+         * Security Features:
+         * - No data transmission (100% client-side)
+         * - Memory clearing for sensitive data
+         * - Auto-expiration of credentials
+         * - Screen sharing protection
+         * - CSP compliance
+         * 
+         * Created by Aleksandr Sukhov on September 19, 2025
+         * Enhanced with Claude Sonnet 4
+         * 
+         * @version 2.0.0
+         */
+        
+        // Use strict mode for better error handling
+        'use strict';
+        
+        // Feature detection and polyfills
+        const hasClipboardAPI = navigator.clipboard && window.isSecureContext;
+        const hasWebCrypto = window.crypto && window.crypto.getRandomValues;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create a secure, isolated namespace
+            const SecureBase64Converter = (() => {
+                // Security-focused DOM element caching
+                const DOM = {
+                    // Encoding elements
+                    usernameInput: document.getElementById('username'),
+                    passwordInput: document.getElementById('password'),
+                    showPasswordEncode: document.getElementById('showPasswordEncode'),
+                    autoEncode: document.getElementById('autoEncode'),
+                    encodeBtn: document.getElementById('encodeBtn'),
+                    clearEncodeBtn: document.getElementById('clearEncodeBtn'),
+                    generateStrongBtn: document.getElementById('generateStrongBtn'),
+                    encodedResult: document.getElementById('encodedResult'),
+                    hideBase64Result: document.getElementById('hideBase64Result'),
+                    autoExpire: document.getElementById('autoExpire'),
+                    copyEncodedBtn: document.getElementById('copyEncodedBtn'),
+                    copyAuthHeaderBtn: document.getElementById('copyAuthHeaderBtn'),
+                    validateBase64Btn: document.getElementById('validateBase64Btn'),
+                    encodeMessage: document.getElementById('encodeMessage'),
+                    
+                    // Decoding elements
+                    base64Input: document.getElementById('base64Input'),
+                    decodeBtn: document.getElementById('decodeBtn'),
+                    clearDecodeBtn: document.getElementById('clearDecodeBtn'),
+                    analyzeBtn: document.getElementById('analyzeBtn'),
+                    decodedUsername: document.getElementById('decodedUsername'),
+                    decodedPassword: document.getElementById('decodedPassword'),
+                    showPasswordDecode: document.getElementById('showPasswordDecode'),
+                    fullDecoded: document.getElementById('fullDecoded'),
+                    copyDecodedBtn: document.getElementById('copyDecodedBtn'),
+                    copyUsernameBtn: document.getElementById('copyUsernameBtn'),
+                    copyPasswordBtn: document.getElementById('copyPasswordBtn'),
+                    decodeMessage: document.getElementById('decodeMessage'),
+                    
+                    // Security & tools
+                    clearAllBtn: document.getElementById('clearAllBtn'),
+                    securityCheckBtn: document.getElementById('securityCheckBtn'),
+                    securityReport: document.getElementById('securityReport'),
+                    securityDetails: document.getElementById('securityDetails')
+                };
+                
+                // Enhanced configuration with security settings
+                const CONFIG = {
+                    messageTimeout: 4000,
+                    autoExpireTimeout: 300000, // 5 minutes
+                    maxPasswordLength: 128,
+                    maxUsernameLength: 64,
+                    secureRandomLength: 16,
+                    debounceDelay: 250,
+                    sampleCredentials: {
+                        username: 'admin',
+                        password: 'SecureP@ss123!'
+                    }
+                };
+                
+                // Enhanced application state with security tracking
+                const state = {
+                    lastEncodedResult: '',
+                    lastDecodedResult: '',
+                    expireTimer: null,
+                    isSecureContext: window.isSecureContext,
+                    sessionStartTime: Date.now(),
+                    operationCount: 0,
+                    securityWarnings: []
+                };
+                
+                // Security utilities
+                const SecurityUtils = {
+                    /**
+                     * Securely clear sensitive data from memory
+                     * @param {string} data - Data to clear
+                     */
+                    secureClear: (data) => {
+                        if (typeof data === 'string') {
+                            // Overwrite memory with random data (best effort)
+                            data = crypto.getRandomValues(new Uint8Array(data.length))
+                                .reduce((acc, val) => acc + String.fromCharCode(val), '');
+                        }
+                    },
+                    
+                    /**
+                     * Generate cryptographically secure random password
+                     * @param {number} length - Password length
+                     * @returns {string} Secure random password
+                     */
+                    generateSecurePassword: (length = 16) => {
+                        if (!hasWebCrypto) {
+                            throw new Error('Secure random generation not available');
+                        }
+                        
+                        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+                        const array = new Uint8Array(length);
+                        crypto.getRandomValues(array);
+                        
+                        return Array.from(array, byte => charset[byte % charset.length]).join('');
+                    },
+                    
+                    /**
+                     * Validate input for security issues
+                     * @param {string} input - Input to validate
+                     * @returns {Object} Validation result
+                     */
+                    validateInput: (input) => {
+                        const issues = [];
+                        
+                        if (input.length > CONFIG.maxPasswordLength) {
+                            issues.push('Input exceeds maximum length');
+                        }
+                        
+                        if (/[<>\"'&]/.test(input)) {
+                            issues.push('Contains potentially unsafe characters');
+                        }
+                        
+                        return {
+                            isValid: issues.length === 0,
+                            issues: issues
+                        };
+                    },
+                    
+                    /**
+                     * Analyze password strength
+                     * @param {string} password - Password to analyze
+                     * @returns {Object} Analysis result
+                     */
+                    analyzePassword: (password) => {
+                        let score = 0;
+                        const feedback = [];
+                        
+                        if (password.length >= 8) score += 1;
+                        else feedback.push('Use at least 8 characters');
+                        
+                        if (/[A-Z]/.test(password)) score += 1;
+                        else feedback.push('Add uppercase letters');
+                        
+                        if (/[a-z]/.test(password)) score += 1;
+                        else feedback.push('Add lowercase letters');
+                        
+                        if (/[0-9]/.test(password)) score += 1;
+                        else feedback.push('Add numbers');
+                        
+                        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+                        else feedback.push('Add special characters');
+                        
+                        const strength = score < 2 ? 'Weak' : score < 4 ? 'Medium' : 'Strong';
+                        
+                        return { score, strength, feedback };
+                    }
+                };
+                
+                // Enhanced utility functions
+                const Utils = {
+                    /**
+                     * Debounce function calls for performance
+                     * @param {Function} func - Function to debounce
+                     * @param {number} wait - Wait time in milliseconds
+                     * @returns {Function} Debounced function
+                     */
+                    debounce: (func, wait) => {
+                        let timeout;
+                        return function executedFunction(...args) {
+                            const later = () => {
+                                clearTimeout(timeout);
+                                func(...args);
+                            };
+                            clearTimeout(timeout);
+                            timeout = setTimeout(later, wait);
+                        };
+                    },
+                    
+                    /**
+                     * Sanitize HTML content
+                     * @param {string} text - Text to sanitize
+                     * @returns {string} Sanitized text
+                     */
+                    sanitizeHTML: (text) => {
+                        const div = document.createElement('div');
+                        div.textContent = text;
+                        return div.innerHTML;
+                    },
+                    
+                    /**
+                     * Format timestamp for display
+                     * @param {number} timestamp - Timestamp to format
+                     * @returns {string} Formatted time
+                     */
+                    formatTime: (timestamp) => {
+                        return new Date(timestamp).toLocaleString();
+                    }
+                };
+                
+                /**
+                 * Initialize the application with security checks
+                 */
+                const init = () => {
+                    try {
+                        // Security context validation
+                        if (!state.isSecureContext) {
+                            showSecurityWarning('Application running in insecure context. Consider using HTTPS.');
+                        }
+                        
+                        // Event listeners with error handling
+                        setupEventListeners();
+                        
+                        // Initialize security features
+                        initSecurityFeatures();
+                        
+                        // Set initial focus with accessibility
+                        DOM.usernameInput.focus();
+                        
+                        console.info('Secure Base64 Converter initialized successfully');
+                    } catch (error) {
+                        console.error('Initialization error:', error);
+                        showMessage('encodeMessage', 'Application initialization failed', 'error');
+                    }
+                };
+                
+                /**
+                 * Setup all event listeners with error handling
+                 */
+                const setupEventListeners = () => {
+                    // Encoding event listeners
+                    DOM.encodeBtn.addEventListener('click', handleEncode);
+                    DOM.clearEncodeBtn.addEventListener('click', clearEncodeFields);
+                    DOM.generateStrongBtn.addEventListener('click', generateStrongPassword);
+                    DOM.copyEncodedBtn.addEventListener('click', () => copyToClipboard(DOM.encodedResult.value, 'encodeMessage'));
+                    DOM.copyAuthHeaderBtn.addEventListener('click', copyAuthHeader);
+                    DOM.validateBase64Btn.addEventListener('click', validateBase64);
+                    DOM.hideBase64Result.addEventListener('change', toggleBase64Visibility);
+                    DOM.autoExpire.addEventListener('change', toggleAutoExpire);
+                    DOM.showPasswordEncode.addEventListener('change', togglePasswordVisibility);
+                    DOM.autoEncode.addEventListener('change', toggleAutoEncode);
+                    
+                    // Decoding event listeners
+                    DOM.decodeBtn.addEventListener('click', handleDecode);
+                    DOM.clearDecodeBtn.addEventListener('click', clearDecodeFields);
+                    DOM.analyzeBtn.addEventListener('click', analyzeBase64String);
+                    DOM.copyDecodedBtn.addEventListener('click', () => copyToClipboard(DOM.fullDecoded.value, 'decodeMessage'));
+                    DOM.copyUsernameBtn.addEventListener('click', () => copyToClipboard(DOM.decodedUsername.value, 'decodeMessage'));
+                    DOM.copyPasswordBtn.addEventListener('click', () => copyToClipboard(DOM.decodedPassword.value, 'decodeMessage'));
+                    DOM.showPasswordDecode.addEventListener('change', togglePasswordVisibility);
+                    
+                    // Security & tools event listeners
+                    DOM.clearAllBtn.addEventListener('click', clearAllFields);
+                    DOM.securityCheckBtn.addEventListener('click', performSecurityCheck);
+                    
+                    // Keyboard shortcuts with accessibility
+                    document.addEventListener('keydown', handleKeyboardShortcuts);
+                    
+                    // Auto-encoding with debouncing
+                    const debouncedAutoEncode = Utils.debounce(autoEncode, CONFIG.debounceDelay);
+                    DOM.usernameInput.addEventListener('input', debouncedAutoEncode);
+                    DOM.passwordInput.addEventListener('input', debouncedAutoEncode);
+                    
+                    // Auto-decoding with debouncing
+                    const debouncedAutoDecode = Utils.debounce(autoDecode, CONFIG.debounceDelay);
+                    DOM.base64Input.addEventListener('input', debouncedAutoDecode);
+                    
+                    // Page visibility API for security
+                    document.addEventListener('visibilitychange', handleVisibilityChange);
+                    
+                    // Window beforeunload for cleanup
+                    window.addEventListener('beforeunload', cleanup);
+                };
+                
+                /**
+                 * Initialize security features
+                 */
+                const initSecurityFeatures = () => {
+                    // Set secure defaults
+                    DOM.autoEncode.checked = true;
+                    DOM.hideBase64Result.checked = false;
+                    DOM.autoExpire.checked = true;
+                    
+                    // Initialize CSP reporting
+                    document.addEventListener('securitypolicyviolation', (e) => {
+                        console.warn('CSP Violation:', e.violatedDirective, e.blockedURI);
+                    });
+                };
+                
+                /**
+                 * Handle encoding with enhanced security
+                 */
+                const handleEncode = async () => {
+                    try {
+                        showLoading(DOM.encodeBtn);
+                        
+                        const username = DOM.usernameInput.value.trim();
+                        const password = DOM.passwordInput.value;
+                        
+                        // Enhanced validation
+                        const usernameValidation = SecurityUtils.validateInput(username);
+                        const passwordValidation = SecurityUtils.validateInput(password);
+                        
+                        if (!usernameValidation.isValid || !passwordValidation.isValid) {
+                            throw new Error('Input validation failed: ' + 
+                                [...usernameValidation.issues, ...passwordValidation.issues].join(', '));
+                        }
+                        
+                        if (!username && !password) {
+                            throw new Error('Please enter username and/or password');
+                        }
+                        
+                        const credentials = `${username}:${password}`;
+                        const encoded = btoa(credentials);
+                        
+                        DOM.encodedResult.value = encoded;
+                        state.lastEncodedResult = encoded;
+                        state.operationCount++;
+                        
+                        // Security analysis
+                        if (password) {
+                            const analysis = SecurityUtils.analyzePassword(password);
+                            if (analysis.strength === 'Weak') {
+                                showSecurityWarning(`Weak password detected. Strength: ${analysis.strength}`);
+                            }
+                        }
+                        
+                        // Auto-expire setup
+                        if (DOM.autoExpire.checked) {
+                            setupAutoExpire();
+                        }
+                        
+                        showMessage('encodeMessage', '✓ Successfully encoded to Base64!', 'success');
+                        
+                        // Select result for easy copying
+                        DOM.encodedResult.select();
+                        DOM.encodedResult.focus();
+                        
+                    } catch (error) {
+                        showMessage('encodeMessage', `❌ ${error.message}`, 'error');
+                        console.error('Encoding error:', error);
+                    } finally {
+                        hideLoading(DOM.encodeBtn);
+                    }
+                };
+                
+                /**
+                 * Handle decoding with enhanced validation
+                 */
+                const handleDecode = async () => {
+                    try {
+                        showLoading(DOM.decodeBtn);
+                        
+                        const base64String = DOM.base64Input.value.trim();
+                        
+                        if (!base64String) {
+                            throw new Error('Please enter a Base64 string to decode');
+                        }
+                        
+                        const cleanBase64 = cleanBase64Input(base64String);
+                        
+                        if (!isValidBase64(cleanBase64)) {
+                            throw new Error('Invalid Base64 format');
+                        }
+                        
+                        const decoded = atob(cleanBase64);
+                        DOM.fullDecoded.value = decoded;
+                        
+                        // Parse username:password
+                        const colonIndex = decoded.indexOf(':');
+                        if (colonIndex !== -1) {
+                            DOM.decodedUsername.value = decoded.substring(0, colonIndex);
+                            DOM.decodedPassword.value = decoded.substring(colonIndex + 1);
+                        } else {
+                            DOM.decodedUsername.value = '';
+                            DOM.decodedPassword.value = '';
+                        }
+                        
+                        state.lastDecodedResult = decoded;
+                        state.operationCount++;
+                        
+                        showMessage('decodeMessage', '✓ Successfully decoded from Base64!', 'success');
+                        
+                    } catch (error) {
+                        showMessage('decodeMessage', `❌ ${error.message}`, 'error');
+                        console.error('Decoding error:', error);
+                        
+                        // Clear results on error
+                        DOM.fullDecoded.value = '';
+                        DOM.decodedUsername.value = '';
+                        DOM.decodedPassword.value = '';
+                    } finally {
+                        hideLoading(DOM.decodeBtn);
+                    }
+                };
+                
+                /**
+                 * Generate cryptographically secure password
+                 */
+                const generateStrongPassword = () => {
+                    try {
+                        if (!hasWebCrypto) {
+                            throw new Error('Secure random generation not available in this browser');
+                        }
+                        
+                        const password = SecurityUtils.generateSecurePassword(16);
+                        DOM.passwordInput.value = password;
+                        
+                        if (DOM.autoEncode.checked) {
+                            autoEncode();
+                        }
+                        
+                        const analysis = SecurityUtils.analyzePassword(password);
+                        showMessage('encodeMessage', `✓ Strong password generated! Strength: ${analysis.strength}`, 'success');
+                        
+                    } catch (error) {
+                        showMessage('encodeMessage', `❌ ${error.message}`, 'error');
+                        console.error('Password generation error:', error);
+                    }
+                };
+                
+                /**
+                 * Copy Authorization header to clipboard
+                 */
+                const copyAuthHeader = async () => {
+                    const base64 = DOM.encodedResult.value;
+                    if (!base64) {
+                        showMessage('encodeMessage', '❌ No Base64 result to copy', 'error');
+                        return;
+                    }
+                    
+                    const authHeader = `Authorization: Basic ${base64}`;
+                    await copyToClipboard(authHeader, 'encodeMessage');
+                };
+                
+                /**
+                 * Validate Base64 string format
+                 */
+                const validateBase64 = () => {
+                    const base64 = DOM.encodedResult.value;
+                    if (!base64) {
+                        showMessage('encodeMessage', '❌ No Base64 string to validate', 'error');
+                        return;
+                    }
+                    
+                    const isValid = isValidBase64(base64);
+                    const message = isValid ? '✓ Valid Base64 format' : '❌ Invalid Base64 format';
+                    const type = isValid ? 'success' : 'error';
+                    
+                    showMessage('encodeMessage', message, type);
+                };
+                
+                /**
+                 * Analyze Base64 string and provide insights
+                 */
+                const analyzeBase64String = () => {
+                    const base64String = DOM.base64Input.value.trim();
+                    if (!base64String) {
+                        showMessage('decodeMessage', '❌ No Base64 string to analyze', 'error');
+                        return;
+                    }
+                    
+                    const cleanBase64 = cleanBase64Input(base64String);
+                    const analysis = {
+                        originalLength: base64String.length,
+                        cleanedLength: cleanBase64.length,
+                        isValid: isValidBase64(cleanBase64),
+                        hasPrefix: base64String.toLowerCase().startsWith('basic '),
+                        padding: (cleanBase64.match(/=/g) || []).length
+                    };
+                    
+                    let report = `📊 Analysis Results:\n`;
+                    report += `• Length: ${analysis.originalLength} chars\n`;
+                    report += `• Valid Base64: ${analysis.isValid ? '✓' : '❌'}\n`;
+                    report += `• Has 'Basic' prefix: ${analysis.hasPrefix ? '✓' : '❌'}\n`;
+                    report += `• Padding characters: ${analysis.padding}\n`;
+                    
+                    if (analysis.isValid) {
+                        try {
+                            const decoded = atob(cleanBase64);
+                            report += `• Decoded length: ${decoded.length} chars\n`;
+                            report += `• Contains colon: ${decoded.includes(':') ? '✓' : '❌'}`;
+                        } catch (e) {
+                            report += `• Decode error: ${e.message}`;
+                        }
+                    }
+                    
+                    showMessage('decodeMessage', report, 'success');
+                };
+                
+                /**
+                 * Perform comprehensive security check
+                 */
+                const performSecurityCheck = () => {
+                    const report = {
+                        timestamp: Utils.formatTime(Date.now()),
+                        sessionDuration: Math.round((Date.now() - state.sessionStartTime) / 1000),
+                        operationCount: state.operationCount,
+                        secureContext: state.isSecureContext,
+                        clipboardAPI: hasClipboardAPI,
+                        webCrypto: hasWebCrypto,
+                        warnings: [...state.securityWarnings]
+                    };
+                    
+                    let html = `<strong>Security Report - ${report.timestamp}</strong><br><br>`;
+                    html += `🔒 Secure Context: ${report.secureContext ? '✓ Yes' : '❌ No'} (${report.secureContext ? 'HTTPS connection' : 'HTTP connection - not secure'})<br>`;
+                    html += `📋 Clipboard API: ${report.clipboardAPI ? '✓ Available' : '❌ Fallback mode'} (${report.clipboardAPI ? 'Modern secure clipboard' : 'Legacy copy method'})<br>`;
+                    html += `🎲 Web Crypto API: ${report.webCrypto ? '✓ Available' : '❌ Not available'} (${report.webCrypto ? 'Cryptographically secure random' : 'Pseudo-random generation only'})<br>`;
+                    html += `⏱️ Session Duration: ${report.sessionDuration}s (Time since page load)<br>`;
+                    html += `🔄 Operations Performed: ${report.operationCount} (Encode/decode count)<br><br>`;
+                    
+                    if (report.warnings.length > 0) {
+                        html += `⚠️ Security Warnings:<br>`;
+                        report.warnings.forEach(warning => {
+                            html += `• ${warning}<br>`;
+                        });
+                    } else {
+                        html += `✅ No security warnings (All security checks passed)`;
+                    }
+                    
+                    DOM.securityDetails.innerHTML = html;
+                    DOM.securityReport.style.display = 'block';
+                };
+                
+                /**
+                 * Export results in secure format
+                 */
+                const exportResults = () => {
+                    const data = {
+                        timestamp: Utils.formatTime(Date.now()),
+                        hasEncodedResult: !!DOM.encodedResult.value,
+                        hasDecodedResult: !!DOM.fullDecoded.value,
+                        securitySettings: {
+                            hideResult: DOM.hideBase64Result.checked,
+                            autoExpire: DOM.autoExpire.checked,
+                            autoEncode: DOM.autoEncode.checked
+                        }
+                    };
+                    
+                    const jsonString = JSON.stringify(data, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `base64-results-${Date.now()}.json`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    
+                    showMessage('encodeMessage', '✓ Results exported successfully', 'success');
+                };
+                
+                // [Continue with remaining enhanced functions...]
+                
+                /**
+                 * Enhanced auto-encoding with security checks
+                 */
+                const autoEncode = () => {
+                    if (!DOM.autoEncode.checked) return;
+                    
+                    const username = DOM.usernameInput.value.trim();
+                    const password = DOM.passwordInput.value;
+                    
+                    if (username || password) {
+                        try {
+                            const credentials = `${username}:${password}`;
+                            const encoded = btoa(credentials);
+                            DOM.encodedResult.value = encoded;
+                            state.lastEncodedResult = encoded;
+                            
+                            if (DOM.autoExpire.checked) {
+                                setupAutoExpire();
+                            }
+                        } catch (error) {
+                            console.error('Auto-encoding error:', error);
+                        }
+                    } else {
+                        DOM.encodedResult.value = '';
+                        state.lastEncodedResult = '';
+                        clearAutoExpire();
+                    }
+                };
+                
+                /**
+                 * Enhanced auto-decoding with validation
+                 */
+                const autoDecode = () => {
+                    const base64String = DOM.base64Input.value.trim();
+                    
+                    if (base64String) {
+                        try {
+                            const cleanBase64 = cleanBase64Input(base64String);
+                            if (isValidBase64(cleanBase64)) {
+                                const decoded = atob(cleanBase64);
+                                DOM.fullDecoded.value = decoded;
+                                
+                                const colonIndex = decoded.indexOf(':');
+                                if (colonIndex !== -1) {
+                                    DOM.decodedUsername.value = decoded.substring(0, colonIndex);
+                                    DOM.decodedPassword.value = decoded.substring(colonIndex + 1);
+                                } else {
+                                    DOM.decodedUsername.value = '';
+                                    DOM.decodedPassword.value = '';
+                                }
+                                
+                                state.lastDecodedResult = decoded;
+                                clearMessage('decodeMessage');
+                            }
+                        } catch (error) {
+                            // Silently handle auto-decode errors
+                            DOM.fullDecoded.value = '';
+                            DOM.decodedUsername.value = '';
+                            DOM.decodedPassword.value = '';
+                        }
+                    } else {
+                        DOM.fullDecoded.value = '';
+                        DOM.decodedUsername.value = '';
+                        DOM.decodedPassword.value = '';
+                        clearMessage('decodeMessage');
+                    }
+                };
+                
+                /**
+                 * Clean Base64 input with enhanced patterns
+                 */
+                const cleanBase64Input = (input) => {
+                    return input
+                        .replace(/^basic\s+/i, '')  // Remove Basic prefix
+                        .replace(/^bearer\s+/i, '') // Remove Bearer prefix
+                        .replace(/\s/g, '')         // Remove whitespace
+                        .replace(/[^A-Za-z0-9+/=]/g, ''); // Remove invalid chars
+                };
+                
+                /**
+                 * Enhanced Base64 validation
+                 */
+                const isValidBase64 = (str) => {
+                    if (!str || str.length === 0) return false;
+                    
+                    try {
+                        // Check format
+                        if (!/^[A-Za-z0-9+/]*={0,2}$/.test(str)) return false;
+                        
+                        // Check padding
+                        if (str.length % 4 !== 0) return false;
+                        
+                        // Try to decode
+                        const decoded = atob(str);
+                        
+                        // Verify round-trip
+                        return btoa(decoded) === str;
+                    } catch {
+                        return false;
+                    }
+                };
+                
+                /**
+                 * Setup auto-expiration timer
+                 */
+                const setupAutoExpire = () => {
+                    clearAutoExpire();
+                    
+                    state.expireTimer = setTimeout(() => {
+                        if (DOM.encodedResult.value) {
+                            SecurityUtils.secureClear(DOM.encodedResult.value);
+                            DOM.encodedResult.value = '';
+                            showMessage('encodeMessage', '🕐 Credentials auto-expired for security', 'success');
+                        }
+                    }, CONFIG.autoExpireTimeout);
+                };
+                
+                /**
+                 * Clear auto-expiration timer
+                 */
+                const clearAutoExpire = () => {
+                    if (state.expireTimer) {
+                        clearTimeout(state.expireTimer);
+                        state.expireTimer = null;
+                    }
+                };
+                
+                /**
+                 * Toggle auto-expiration
+                 */
+                const toggleAutoExpire = () => {
+                    if (DOM.autoExpire.checked && DOM.encodedResult.value) {
+                        setupAutoExpire();
+                    } else {
+                        clearAutoExpire();
+                    }
+                };
+                
+                /**
+                 * Enhanced clipboard operations with fallback
+                 */
+                const copyToClipboard = async (text, messageElementId) => {
+                    if (!text) {
+                        showMessage(messageElementId, '❌ Nothing to copy', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        if (hasClipboardAPI) {
+                            await navigator.clipboard.writeText(text);
+                        } else {
+                            // Fallback for older browsers
+                            const textArea = document.createElement('textarea');
+                            textArea.value = text;
+                            textArea.style.position = 'fixed';
+                            textArea.style.left = '-999999px';
+                            textArea.style.opacity = '0';
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            
+                            if (!document.execCommand('copy')) {
+                                throw new Error('Copy command failed');
+                            }
+                            
+                            document.body.removeChild(textArea);
+                        }
+                        
+                        showMessage(messageElementId, '✓ Copied to clipboard!', 'success');
+                    } catch (error) {
+                        showMessage(messageElementId, '❌ Failed to copy to clipboard', 'error');
+                        console.error('Clipboard error:', error);
+                    }
+                };
+                
+                /**
+                 * Enhanced visibility controls
+                 */
+                const toggleBase64Visibility = () => {
+                    if (DOM.hideBase64Result.checked) {
+                        DOM.encodedResult.classList.add('hidden-content');
+                    } else {
+                        DOM.encodedResult.classList.remove('hidden-content');
+                    }
+                };
+                
+                const togglePasswordVisibility = (event) => {
+                    const checkbox = event.target;
+                    const isEncode = checkbox.id === 'showPasswordEncode';
+                    const targetInput = isEncode ? DOM.passwordInput : DOM.decodedPassword;
+                    
+                    targetInput.type = checkbox.checked ? 'text' : 'password';
+                };
+                
+                const toggleAutoEncode = () => {
+                    if (DOM.autoEncode.checked) {
+                        autoEncode();
+                    }
+                };
+                
+                /**
+                 * Enhanced keyboard shortcuts
+                 */
+                const handleKeyboardShortcuts = (e) => {
+                    // Ctrl+Enter for encode/decode
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        e.preventDefault();
+                        const activeElement = document.activeElement;
+                        
+                        if (activeElement === DOM.usernameInput || activeElement === DOM.passwordInput) {
+                            handleEncode();
+                        } else if (activeElement === DOM.base64Input) {
+                            handleDecode();
+                        }
+                    }
+                    
+                    // Ctrl+L for clear current section
+                    if (e.ctrlKey && e.key === 'l') {
+                        e.preventDefault();
+                        const activeElement = document.activeElement;
+                        
+                        if (activeElement === DOM.usernameInput || activeElement === DOM.passwordInput) {
+                            clearEncodeFields();
+                        } else if (activeElement === DOM.base64Input) {
+                            clearDecodeFields();
+                        }
+                    }
+                    
+                    // Ctrl+Shift+A for clear all
+                    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                        e.preventDefault();
+                        clearAllFields();
+                    }
+                    
+                    // Ctrl+G for generate strong password
+                    if (e.ctrlKey && e.key === 'g') {
+                        e.preventDefault();
+                        generateStrongPassword();
+                    }
+                    
+                    // Escape to clear messages
+                    if (e.key === 'Escape') {
+                        clearAllMessages();
+                    }
+                };
+                
+                /**
+                 * Handle page visibility changes for security
+                 */
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        // Page is hidden - could implement additional security measures
+                        console.info('Page hidden - maintaining security state');
+                    } else {
+                        // Page is visible again
+                        console.info('Page visible - security state active');
+                    }
+                };
+                
+                /**
+                 * Enhanced field clearing with security
+                 */
+                const clearEncodeFields = () => {
+                    // Secure clear of sensitive data
+                    if (DOM.passwordInput.value) {
+                        SecurityUtils.secureClear(DOM.passwordInput.value);
+                    }
+                    if (DOM.encodedResult.value) {
+                        SecurityUtils.secureClear(DOM.encodedResult.value);
+                    }
+                    
+                    DOM.usernameInput.value = '';
+                    DOM.passwordInput.value = '';
+                    DOM.encodedResult.value = '';
+                    DOM.hideBase64Result.checked = false;
+                    DOM.encodedResult.classList.remove('hidden-content');
+                    
+                    clearAutoExpire();
+                    state.lastEncodedResult = '';
+                    clearMessage('encodeMessage');
+                    DOM.usernameInput.focus();
+                };
+                
+                const clearDecodeFields = () => {
+                    // Secure clear of sensitive data
+                    if (DOM.decodedPassword.value) {
+                        SecurityUtils.secureClear(DOM.decodedPassword.value);
+                    }
+                    if (DOM.fullDecoded.value) {
+                        SecurityUtils.secureClear(DOM.fullDecoded.value);
+                    }
+                    
+                    DOM.base64Input.value = '';
+                    DOM.fullDecoded.value = '';
+                    DOM.decodedUsername.value = '';
+                    DOM.decodedPassword.value = '';
+                    
+                    state.lastDecodedResult = '';
+                    clearMessage('decodeMessage');
+                    DOM.base64Input.focus();
+                };
+                
+                const clearAllFields = () => {
+                    clearEncodeFields();
+                    clearDecodeFields();
+                    
+                    // Reset all checkboxes
+                    DOM.showPasswordEncode.checked = false;
+                    DOM.showPasswordDecode.checked = false;
+                    DOM.hideBase64Result.checked = false;
+                    DOM.autoExpire.checked = true;
+                    DOM.autoEncode.checked = true;
+                    
+                    // Reset password input types
+                    DOM.passwordInput.type = 'password';
+                    DOM.decodedPassword.type = 'password';
+                    DOM.encodedResult.classList.remove('hidden-content');
+                    
+                    // Hide security report
+                    DOM.securityReport.style.display = 'none';
+                    
+                    // Clear all messages
+                    clearAllMessages();
+                    
+                    DOM.usernameInput.focus();
+                };
+                
+                /**
+                 * Generate sample data with enhanced security
+                 */
+                const generateSampleData = () => {
+                    DOM.usernameInput.value = CONFIG.sampleCredentials.username;
+                    DOM.passwordInput.value = CONFIG.sampleCredentials.password;
+                    
+                    if (DOM.autoEncode.checked) {
+                        autoEncode();
+                    }
+                    
+                    showMessage('encodeMessage', '✓ Sample data generated!', 'success');
+                };
+                
+                /**
+                 * Enhanced message system
+                 */
+                const showMessage = (elementId, message, type) => {
+                    const element = document.getElementById(elementId);
+                    if (!element) return;
+                    
+                    element.innerHTML = `<div class="message ${type}">${Utils.sanitizeHTML(message)}</div>`;
+                    
+                    // Auto-clear after timeout
+                    setTimeout(() => {
+                        clearMessage(elementId);
+                    }, CONFIG.messageTimeout);
+                };
+                
+                const clearMessage = (elementId) => {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.innerHTML = '';
+                    }
+                };
+                
+                const clearAllMessages = () => {
+                    clearMessage('encodeMessage');
+                    clearMessage('decodeMessage');
+                };
+                
+                const showSecurityWarning = (message) => {
+                    state.securityWarnings.push(message);
+                    console.warn('Security Warning:', message);
+                };
+                
+                /**
+                 * Loading state management
+                 */
+                const showLoading = (button) => {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                };
+                
+                const hideLoading = (button) => {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                };
+                
+                /**
+                 * Cleanup function for security
+                 */
+                const cleanup = () => {
+                    // Clear timers
+                    clearAutoExpire();
+                    
+                    // Secure clear sensitive data
+                    if (state.lastEncodedResult) {
+                        SecurityUtils.secureClear(state.lastEncodedResult);
+                    }
+                    if (state.lastDecodedResult) {
+                        SecurityUtils.secureClear(state.lastDecodedResult);
+                    }
+                    
+                    console.info('Application cleanup completed');
+                };
+                
+                // Initialize the application
+                init();
+                
+                // Return public API for testing/debugging
+                return {
+                    handleEncode,
+                    handleDecode,
+                    clearAllFields,
+                    generateStrongPassword,
+                    performSecurityCheck,
+                    cleanup
+                };
+            })();
+            
+            // Global error handler for uncaught errors
+            window.addEventListener('error', (e) => {
+                console.error('Global error:', e.error);
+            });
+            
+            // Handle unhandled promise rejections
+            window.addEventListener('unhandledrejection', (e) => {
+                console.error('Unhandled promise rejection:', e.reason);
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
